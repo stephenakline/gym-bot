@@ -199,7 +199,6 @@ def set_routine(person, weekly_schedule):
 if __name__ == "__main__":
     READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
     sqlite_path = '/home/ec2-user/gym-bot/'    # name of the sqlite database file
-    # sqlite_path = '/Users/stephenkline/Documents/personal/slack-bot/slack-bot/'
 
     if len(sys.argv) < 2:
         print('Usage:')
