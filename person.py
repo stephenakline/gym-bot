@@ -102,7 +102,7 @@ class Person:
 # move this to Person class?
 def get_workout_statistics(channel, database, ids_x_names):
     for i in WORKOUT_LIST:
-        filepath = "/home/ec2-user/slack-bot/workout/" + i
+        filepath = os.getcwd() + '/workout/' + i
         title = "'" + WORKOUT_LIST[i] + "'"
         comment = "'How many " + WORKOUT_LIST[i] + " did you do?'"
         display_file_to_slack(filepath, channel, title, comment)
@@ -133,7 +133,7 @@ def get_workout_statistics(channel, database, ids_x_names):
         # get_workout_statistics(channel, database, person)
         response = "I don't have the workout data base set up yet - try again in a few weeks."
     elif any(x in command for x in SUMMARY_COMMAND):
-        # display_file_to_slack('/home/ec2-user/slack-bot/images/bravo-congrats.gif', person.get_channel(), 'Wow! Bravo!', 'Your summary will be coming soon...')
+        # display_file_to_slack(os.getcwd() + '/images/bravo-congrats.gif', person.get_channel(), 'Wow! Bravo!', 'Your summary will be coming soon...')
         response = "I don't have the summary set up yet - tray again in a few weeks."
     else: 
         response = "Not sure what you mean. Use either *" + RUN_COMMAND[0] + \
