@@ -23,7 +23,7 @@ def get_list_of_users(slack_client):
     ids = []
     user_names = []
     time_zone = []
-    
+
     for i in n:
         if i.startswith('{"id') or i.startswith('"members":[{"id":'):
             ids.append(split_up_unicode(i))
@@ -35,7 +35,7 @@ def get_list_of_users(slack_client):
     ids_x_names = dict(zip(ids, zip(user_names, time_zone)))
     return ids_x_names
 
-def get_list_of_channels(slack_client): 
+def get_list_of_channels(slack_client):
     temp = slack_client.server.api_call("im.list")
     channel_info = [e.encode('utf-8') for e in temp.strip('[]').split(',')]
 
@@ -47,7 +47,7 @@ def get_list_of_channels(slack_client):
             channels.append(split_up_unicode(i))
         if i.startswith('"user":'):
             users.append(split_up_unicode(i))
- 
+
     direct_channels = dict(zip(users, channels))
     return direct_channels, channels
 

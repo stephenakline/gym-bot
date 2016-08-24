@@ -11,6 +11,7 @@ from slackclient import SlackClient
 
 import person
 import util
+import workout
 import scheduler
 
 """
@@ -22,12 +23,11 @@ Notes:
         https://www.fullstackpython.com/blog/build-first-slack-bot-python.html
     - make each person an object, follow this guide
         https://jeffknupp.com/blog/2014/06/18/improve-your-python-python-classes-and-object-oriented-programming/
-Next:
-    - do so by having a list [possibly in scheduler] of starting, active and complete users for main.py to check,
+TODO: do so by having a list [possibly in scheduler] of starting, active and complete users for main.py to check,
         so we don't have to loop through all users to check
-    - add SQL data base in main.py for workout (right now running)
-    - ask person what workout they are doing (run or workout)
-    - create rest of DAG for workout routine (maybe make a workout_functions.py file)
+TODO: add SQL data base in main.py for workout (right now running)
+TODO: ask person what workout they are doing (run or workout)
+TODO: create rest of DAG for workout routine (maybe make a workout_functions.py file)
 Later:
     - how to upload images from local computer using slack API?
     - add image for each workout? track each excercise?
@@ -45,19 +45,6 @@ BOT_ID = os.environ.get('BOT_ID')
 
 # constants
 AT_BOT = "<@" + str(BOT_ID) + ">:"
-
-# starter commands
-HELLO_COMMAND   = ["hello", "morning"]
-RUN_COMMAND     = ["run", "ran", "treadmill"]
-ROW_COMMAND     = ["row"]
-WORKOUT_COMMAND = ["workout"]
-SUMMARY_COMMAND = ["summary", "report"]
-WORKOUT_LIST    = {'2-knee-up-crunches.gif': 'knee up crunches',
-                   '1-standard-crunch.gif': 'standard crunches'}
-                    #, '3-hip-lifts.gif',
-                    # '4-oblique-crunches.gif', '5-side-plank-dips.gif',
-                    # '6-oblique-leg-extensions.gif', '7-supermans.gif', '8-bridged-plank-leg-lifts.gif', '9-pushup.gif',
-                    # '10-heel-touches.gif', '11-bicycle.gif', '12-half-up-twists.gif']
 
 # instantiate Slack & Twilio clients
 # slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
@@ -92,6 +79,7 @@ def handle_command(command, person, job_status, weekly_schedule):
 
     return job_status
 
+''' TODO: move this to workout.py '''
 def begin_workout(person, weekly_schedule):
     message = 'morning @' + person.name + ', you ready for your workout?'
     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
@@ -132,16 +120,19 @@ def begin_workout(person, weekly_schedule):
             slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
             weekly_schedule.end_running_workout(person, time_str)
 
+''' TODO: move this to workout.py '''
 def during_workout(person):
     message = 'don\'t talk to me, you should be working out!'
     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
     time.sleep(READ_WEBSOCKET_DELAY)
 
+''' TODO: move this to workout.py '''
 def end_body_workout(person):
     person.status = 'inactive'
     message = '@' + person.name + ', looks like you finished your workout. we\'re still building the functionality for the body routine'
     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
 
+''' TODO: move this to workout.py '''
 def end_running_workout(person):
     person.status = 'inactive'
     message = '@' + person.name + ', looks like you finished your workout. how many miles did you run?'
