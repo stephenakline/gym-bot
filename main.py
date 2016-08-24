@@ -11,7 +11,6 @@ from slackclient import SlackClient
 
 import person
 import util
-import workout
 import scheduler
 
 """
@@ -46,6 +45,19 @@ BOT_ID = os.environ.get('BOT_ID')
 # constants
 AT_BOT = "<@" + str(BOT_ID) + ">:"
 
+# starter commands
+HELLO_COMMAND   = ["hello", "morning"]
+RUN_COMMAND     = ["run", "ran", "treadmill"]
+ROW_COMMAND     = ["row"]
+WORKOUT_COMMAND = ["workout"]
+SUMMARY_COMMAND = ["summary", "report"]
+WORKOUT_LIST    = {'2-knee-up-crunches.gif': 'knee up crunches',
+                   '1-standard-crunch.gif': 'standard crunches'}
+                    #, '3-hip-lifts.gif',
+                    # '4-oblique-crunches.gif', '5-side-plank-dips.gif',
+                    # '6-oblique-leg-extensions.gif', '7-supermans.gif', '8-bridged-plank-leg-lifts.gif', '9-pushup.gif',
+                    # '10-heel-touches.gif', '11-bicycle.gif', '12-half-up-twists.gif']
+
 # instantiate Slack & Twilio clients
 # slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
 slack_client = SlackClient(os.environ.get('SLACK_TOKEN'))
@@ -79,7 +91,6 @@ def handle_command(command, person, job_status, weekly_schedule):
 
     return job_status
 
-''' TODO: move this to workout.py '''
 def begin_workout(person, weekly_schedule):
     message = 'morning @' + person.name + ', you ready for your workout?'
     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
@@ -96,44 +107,22 @@ def begin_workout(person, weekly_schedule):
     if response.startswith('n'):
         message = 'you lazy piece of... just don\'t let it happen again'
         person.status = 'inactive'
-        slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
-    else:
-        if response.startswith('y'):
-            message = 'that\'s what i wanted to hear!'
-        else:
-            message = 'i don\'t know what that means, so we\'re starting your workout anyways.'
-        message += ' what are you going to do today? you can say *run* or *workout*'
+    elif response.startswith('y'):
+        message = 'that\'s what i wanted to hear! i\'ll check back in an hour'
+        weekly_schedule.end_workout(person, time_str)
         person.status = 'active'
-        slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
+    else:
+        message = 'i don\'t know what that means, so we\'re starting your workout anyways. i\'ll check back in an hour'
+        weekly_schedule.end_workout(person, time_str)
+        person.status = 'active'
+    slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
 
-        choice = None
-        while choice == None:
-            choice, _, _ = parse_slack_output(slack_client.rtm_read())
-            time.sleep(READ_WEBSOCKET_DELAY)
-
-        if choice.startswith('w'):
-            weekly_schedule.end_body_workout(person, time_str)
-        elif choice.startswith('r'):
-            weekly_schedule.end_running_workout(person, time_str)
-        else:
-            message = 'i\'dont know what you meant, so lets assume you are running'
-            slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
-            weekly_schedule.end_running_workout(person, time_str)
-
-''' TODO: move this to workout.py '''
 def during_workout(person):
     message = 'don\'t talk to me, you should be working out!'
     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
     time.sleep(READ_WEBSOCKET_DELAY)
 
-''' TODO: move this to workout.py '''
-def end_body_workout(person):
-    person.status = 'inactive'
-    message = '@' + person.name + ', looks like you finished your workout. we\'re still building the functionality for the body routine'
-    slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
-
-''' TODO: move this to workout.py '''
-def end_running_workout(person):
+def end_workout(person):
     person.status = 'inactive'
     message = '@' + person.name + ', looks like you finished your workout. how many miles did you run?'
     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)

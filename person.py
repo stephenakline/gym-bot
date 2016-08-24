@@ -2,7 +2,6 @@ import string
 import schedule
 import sys
 import util
-import workout
 
 class Person:
 
@@ -27,7 +26,7 @@ class Person:
     def set_routine(self, time_str, day):
         print '[person.set_routine(time_str, day)]: set routine for ' + self.name + ' at ' \
             + day + ', ' + Person.get_local_time(self, time_str) + ' ' + self.timezone
-        self.routine[day] = (time_str, 'none')
+        self.routine[day] = time_str
 
     def start_workout(self):
         print '[person.start_workout()]: starting workout for ' + self.name
@@ -96,7 +95,7 @@ class Person:
         string = self.name + " is currently located in " + self.timezone + \
             " and talks to gym-buddy in " + self.channel + ". their schedule is as follows: \n"
         for i in self.routine:
-            string += "\ton " + i + ", will workout at " + self.routine[i][0] + ".\n"
+            string += "\ton " + i + ", will workout at " + self.routine[i] + ".\n"
         return string
 
 '''

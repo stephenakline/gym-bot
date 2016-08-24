@@ -14,25 +14,25 @@ class Scheduler:
     def start_persons_workout(self, person):
         for i in person.routine:
             if i == 'monday':
-                self.start_monday_routine(person, person.routine[i][0])
+                self.start_monday_routine(person, person.routine[i])
                 # self.end_monday_routine(person, person.routine[i])
             if i == 'tuesday':
-                self.start_tuesday_routine(person, person.routine[i][0])
+                self.start_tuesday_routine(person, person.routine[i])
                 # self.end_tuesday_routine(person, person.routine[i])
             if i == 'wednesday':
-                self.start_wednesday_routine(person, person.routine[i][0])
+                self.start_wednesday_routine(person, person.routine[i])
                 # self.end_wednesday_routine(person, person.routine[i])
             if i == 'thursday':
-                self.start_thursday_routine(person, person.routine[i][0])
+                self.start_thursday_routine(person, person.routine[i])
                 # self.end_thursday_routine(person, person.routine[i])
             if i == 'friday':
-                self.start_friday_routine(person, person.routine[i][0])
+                self.start_friday_routine(person, person.routine[i])
                 # self.end_friday_routine(person, person.routine[i])
             if i == 'saturday':
-                self.start_saturday_routine(person, person.routine[i][0])
+                self.start_saturday_routine(person, person.routine[i])
                 # self.end_saturday_routine(person, person.routine[i])
             if i == 'sunday':
-                self.start_sunday_routine(person, person.routine[i][0])
+                self.start_sunday_routine(person, person.routine[i])
                 # self.end_sunday_routine(person, person.routine[i])
 
     def end_workout(self, person, time_str):
