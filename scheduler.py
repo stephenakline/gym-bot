@@ -41,7 +41,7 @@ class Scheduler:
         hour = int(time_str.split(':')[0]) + 1
         minute = int(time_str.split(':')[0])
         time_end = str(hour) + ':' + str(minute)
-        self.schedule.every().day.at(time_str).do(person.end_workout)
+        self.schedule.every().day.at(time_str).do(person.finish_workout)
 
     def start_monday_routine(self, person, time_str):
         print '[scheduler.start_monday_routine(person, time_str)]: workout starts for ' \

@@ -33,7 +33,7 @@ class Person:
         self.status = 'start'
         return schedule.CancelJob
 
-    def end_workout(self):
+    def finish_workout(self):
         print '[person.end_workout()]: ending workout for ' + self.name
         self.status = 'complete'
         return schedule.CancelJob
