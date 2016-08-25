@@ -94,16 +94,15 @@ def handle_command(command, person, job_status, weekly_schedule):
 def begin_workout(person, weekly_schedule):
     message = 'morning @' + person.name + ', you ready for your workout?'
     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
-    time.sleep(READ_WEBSOCKET_DELAY)
+    time.sleep(READ_WEBSOCKET_DEALY)
     response = None
     while response == None:
         response, _, _ = parse_slack_output(slack_client.rtm_read())
         time.sleep(READ_WEBSOCKET_DELAY)
-
     gmt_time = time.gmtime()
     hour = gmt_time[3] + 1
     minute = gmt_time[4]
-    time_str = str(hour) + ':' + str(hour)
+    time_str = str(hour) + ':' + str(minute)
     if response.startswith('n'):
         message = 'you lazy piece of... just don\'t let it happen again'
         person.status = 'inactive'
@@ -231,15 +230,19 @@ if __name__ == "__main__":
                     begin_workout(ids_x_person[i], weekly_schedule)
                 elif ids_x_person[i].status == 'complete' and ids_x_person[i].name == 'stephen':
                     end_workout(ids_x_person[i])
+            try:
+                command, channel, user_id = parse_slack_output(slack_client.rtm_read())
+            except websocket._exceptions.WebSocketConnectionClosedException:
+                print 'Error Caught: Connnection is already closed.'
+                sys.exit()
 
-            command, channel, user_id = parse_slack_output(slack_client.rtm_read())
             if command and channel:
                 jobs_scheduled = handle_command(command, ids_x_person[user_id], jobs_scheduled, weekly_schedule)
             if jobs_scheduled:
                 weekly_schedule.run_pending()
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
-        print('Connection failed. Invalid Slack token or bot ID?')
+        print 'Connection failed. Invalid Slack token or bot ID?'
 
     CONNECTION.commit()
     CONNECTION.close()
