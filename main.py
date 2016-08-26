@@ -11,6 +11,7 @@ from slackclient import SlackClient
 
 import person
 import util
+import workout
 import scheduler
 
 """
@@ -65,7 +66,7 @@ def handle_command(command, person, job_status, weekly_schedule):
     hour = 20; error_message = True
 
     if person.status == 'active' and person.name in ACTIVE_USERS:
-        workout.during(person)
+        workout.during(person, slack_client)
     elif not person.routine and person.name in ACTIVE_USERS:
         time_str = str(hour) + ':00'
         message = 'hey @' + person.name + ', it looks like you don\'t a schedule set up yet. we\'ll do that for you ' \
@@ -214,12 +215,12 @@ if __name__ == "__main__":
             # TODO: don't look through all people, only loop through active users
             for i in ids_x_person:
                 if ids_x_person[i].status == 'start' and ids_x_person[i].name in ACTIVE_USERS:
-                    workout.begin(ids_x_person[i], weekly_schedule)
+                    workout.begin(ids_x_person[i], weekly_schedule, slack_client)
                 elif ids_x_person[i].status == 'complete' and ids_x_person[i].name in ACTIVE_USERS:
-                    workout.end(ids_x_person[i])
+                    workout.end(ids_x_person[i], slack_client)
             try:
                 command, channel, user_id = parse_slack_output(slack_client.rtm_read())
-            except websocket._exceptions.WebSocketConnectionClosedException:
+            except WebSocketConnectionClosedException:
                 print '\n-- Error Caught: Connnection is already closed. --\n'
                 sys.exit()
 
