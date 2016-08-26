@@ -38,57 +38,6 @@ class Person:
         self.status = 'complete'
         return schedule.CancelJob
 
-    # move this to Person class?
-    def get_running_data(self):
-        distance = None
-        question = "How many miles did you run today?"
-        slack_client.api_call("chat.postMessage", channel=self.channel, text=question, as_user=True)
-        while distance == None:
-            distance, _, _ = parse_slack_output(slack_client.rtm_read())
-            time.sleep(READ_WEBSOCKET_DELAY)
-
-        try:
-            distance = float(distance)
-        except ValueError:
-            # Handle the exception
-            response = "Try again " + self.name + ", you gotta enter a number."
-            slack_client.api_call("chat.postMessage", channel=self.channel, text=response, as_user=True)
-            return
-
-        duration = None
-        question = ""
-        if random.random() < .2:
-            question = "Awesome. "
-        elif random.random() < .4:
-            question = "Impressive. "
-        question += "How many minutes did you run for?"
-        slack_client.api_call("chat.postMessage", channel=self.channel, text=question, as_user=True)
-        while duration == None:
-            duration, _, _ = parse_slack_output(slack_client.rtm_read())
-            time.sleep(READ_WEBSOCKET_DELAY)
-
-        try:
-            duration = float(duration)
-        except ValueError:
-            # Handle the exception
-            response = "Try again " + self.name + ", you gotta enter a number."
-            slack_client.api_call("chat.postMessage", channel=self.channel, text=response, as_user=True)
-            return
-
-        pace = duration / distance
-        best_pace = get_best_pace(c)
-
-        if pace <= best_pace:
-            response = "Amazing, you ran a *" + str(round(pace, 2)) + "* minute mile! That's new personal best!"
-        else:
-            response = "Not bad, you ran a *" + str(round(pace, 2)) + "* minute mile!"
-
-        slack_client.api_call("chat.postMessage", channel=self.channel, text=response, as_user=True)
-        current_time = time.strftime("%Y-%m-%d %H:%M:%S")
-        database.execute("INSERT INTO my_running_table VALUES (?, ?, ?, ?, ?)",
-            (self.name, current_time, distance, duration, pace))
-        conn.commit()
-
     def __repr__(self):
         """ overloading of print method for Person class """
 

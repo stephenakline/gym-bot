@@ -34,8 +34,6 @@ Later:
 
 # starterbot's ID as an environment variable
 BOT_ID = os.environ.get('BOT_ID')
-
-# constants
 AT_BOT = "<@" + str(BOT_ID) + ">:"
 
 # starter commands
@@ -46,10 +44,16 @@ WORKOUT_COMMAND = ["workout"]
 SUMMARY_COMMAND = ["summary", "report"]
 WORKOUT_LIST    = {'2-knee-up-crunches.gif': 'knee up crunches',
                    '1-standard-crunch.gif': 'standard crunches'}
-                    #, '3-hip-lifts.gif',
-                    # '4-oblique-crunches.gif', '5-side-plank-dips.gif',
-                    # '6-oblique-leg-extensions.gif', '7-supermans.gif', '8-bridged-plank-leg-lifts.gif', '9-pushup.gif',
-                    # '10-heel-touches.gif', '11-bicycle.gif', '12-half-up-twists.gif']
+                    # '3-hip-lifts.gif': ,
+                    # '4-oblique-crunches.gif': ,
+                    # '5-side-plank-dips.gif': ,
+                    # '6-oblique-leg-extensions.gif': ,
+                    # '7-supermans.gif': ,
+                    # '8-bridged-plank-leg-lifts.gif': ,
+                    # '9-pushup.gif': ,
+                    # '10-heel-touches.gif': ,
+                    # '11-bicycle.gif': ,
+                    # '12-half-up-twists.gif': }
 
 ACTIVE_USERS = ['stephen']
 
@@ -145,7 +149,7 @@ def set_routine(person, weekly_schedule):
         start_time = None
 
         while start_time == None:
-            start_time, channel, user_name = parse_slack_output(slack_client.rtm_read())
+            start_time, channel, user_name = util.parse_slack_output(slack_client.rtm_read(), slack_client)
             time.sleep(READ_WEBSOCKET_DELAY)
 
         if start_time == 'no':
@@ -162,32 +166,13 @@ def set_routine(person, weekly_schedule):
     weekly_schedule.start_persons_workout(person)
     return schedule.CancelJob
 
-def parse_slack_output(slack_rtm_output):
-    """
-    The Slack Real Time Messaging API is an events firehose.
-    this parsing function returns None unless a message is
-    directed at the Bot, based on its ID.
-    """
-    output_list = slack_rtm_output
-    if output_list and len(output_list) > 0:
-        for output in output_list:
-            _, gym_bot_channels = util.get_list_of_channels(slack_client)
-            if output and 'text' in output:
-                if BOT_ID != output['user'] and output['channel'] in gym_bot_channels:
-                    return output['text'].lower(), output['channel'], output['user']
-                elif output and 'text' in output and AT_BOT in output['text']:
-                    # return text after the @ mention, whitespace removed
-                    return output['text'].split(AT_BOT)[1].strip().lower(), \
-                        output['channel'], output['user']
-    return None, None, None
-
 if __name__ == "__main__":
     READ_WEBSOCKET_DELAY = 1           # 1 second delay between reading from firehose
     sqlite_path = os.getcwd() + '/'    # name of the sqlite database file
 
     if len(sys.argv) < 2:
         print('Usage:')
-        print('  python {} <database name>'.format(sys.argv[0]))
+        print('\tpython {} <database name>'.format(sys.argv[0]))
         exit()
 
     sqlite_file = sqlite_path + sys.argv[1]
@@ -219,9 +204,11 @@ if __name__ == "__main__":
                 elif ids_x_person[i].status == 'complete' and ids_x_person[i].name in ACTIVE_USERS:
                     workout.end(ids_x_person[i], slack_client)
             try:
-                command, channel, user_id = parse_slack_output(slack_client.rtm_read())
-            except WebSocketConnectionClosedException:
-                print '\n-- Error Caught: Connnection is already closed. --\n'
+                command, channel, user_id = util.parse_slack_output(slack_client.rtm_read(), slack_client)
+            except WebSocketConnectionClosedException as e:
+                print '\n~~ Error Caught: Connnection is already closed. ~~'
+                print e
+                print '~~ Error Caught: Connnection is already closed. ~~'
                 sys.exit()
 
             if command and channel:

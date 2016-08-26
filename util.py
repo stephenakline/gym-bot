@@ -1,4 +1,12 @@
+import os
+
 """ data objects """
+# starterbot's ID as an environment variable
+BOT_ID = os.environ.get('BOT_ID')
+
+# constants
+AT_BOT = "<@" + str(BOT_ID) + ">:"
+
 gmt_x_timezone = {}
 gmt_x_timezone['eastern daylight yime'] = -4
 gmt_x_timezone['central'] = -5
@@ -12,6 +20,25 @@ list_timezones = list_timezones[:-2]
 days_of_week = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
 """ helper functions for splitting up unicode and getting list fo users/channels """
+def parse_slack_output(slack_rtm_output, slack_client):
+    """
+    The Slack Real Time Messaging API is an events firehose.
+    this parsing function returns None unless a message is
+    directed at the Bot, based on its ID.
+    """
+    output_list = slack_rtm_output
+    if output_list and len(output_list) > 0:
+        for output in output_list:
+            _, gym_bot_channels = get_list_of_channels(slack_client)
+            if output and 'text' in output:
+                if BOT_ID != output['user'] and output['channel'] in gym_bot_channels:
+                    return output['text'].lower(), output['channel'], output['user']
+                elif output and 'text' in output and AT_BOT in output['text']:
+                    # return text after the @ mention, whitespace removed
+                    return output['text'].split(AT_BOT)[1].strip().lower(), \
+                        output['channel'], output['user']
+    return None, None, None
+
 def split_up_unicode(text):
 	clean_version = text.split(':')[-1].strip('"')
         return clean_version

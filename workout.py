@@ -44,7 +44,7 @@ def begin(person, weekly_schedule, slack_client):
     time.sleep(READ_WEBSOCKET_DELAY)
     response = None
     while response == None:
-        response, _, _ = parse_slack_output(slack_client.rtm_read())
+        response, _, _ = util.parse_slack_output(slack_client.rtm_read(), slack_client)
         time.sleep(READ_WEBSOCKET_DELAY)
     gmt_time = time.gmtime()
     hour = gmt_time[3] + 1
@@ -82,13 +82,13 @@ def end(person, slack_client):
     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
     miles = None
     while miles == None:
-        miles, _, _ = parse_slack_output(slack_client.rtm_read())
+        miles, _, _ = util.parse_slack_output(slack_client.rtm_read(), slack_client)
         time.sleep(READ_WEBSOCKET_DELAY)
     message = 'impressive. how long did you run for?'
     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
     duration = None
     while duration == None:
-        duration, _, _ = parse_slack_output(slack_client.rtm_read())
+        duration, _, _ = util.parse_slack_output(slack_client.rtm_read(), slack_client)
         time.sleep(READ_WEBSOCKET_DELAY)
     message = 'nice. you ran ' + miles + ' miles in ' + duration + ' minutes'
     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
