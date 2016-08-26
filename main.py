@@ -28,11 +28,7 @@ Later:
     - how to upload images from local computer using slack API?
     - add image for each workout? track each excercise?
     - run summary reports from data base on command
-    - make it so bot asks me every morning at 8 am (like howdy)
-    - should only say 'good morning. what did you do today?' once per day
-    - do everything for 'row'
-    - incorporate texting?
-        - https://www.twilio.com/blog/2016/05/build-sms-slack-bot-python.html
+    - incorporate Google Calendar API to add workout events to your calendar [do i have a user's email?]
 """
 
 # starterbot's ID as an environment variable
