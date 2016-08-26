@@ -1,11 +1,14 @@
 '''
 File that contains functions [...]
 '''
+import time
 from slackclient import SlackClient
 
 import person
 import util
 import scheduler
+
+READ_WEBSOCKET_DELAY = 1
 
 '''
 Global Variables
@@ -35,10 +38,10 @@ says no, we do not run the workout.
 TODO add function to count the number of times a user does or does not workout
 TODO make time more dynamic for end of workout
 '''
-def begin(person, weekly_schedule):
+def begin(person, weekly_schedule, slack_client):
     message = 'morning @' + person.name + ', you ready for your workout?'
     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
-    time.sleep(READ_WEBSOCKET_DEALY)
+    time.sleep(READ_WEBSOCKET_DELAY)
     response = None
     while response == None:
         response, _, _ = parse_slack_output(slack_client.rtm_read())
@@ -63,7 +66,7 @@ def begin(person, weekly_schedule):
 '''
 Function that responds to user while they are working out.
 '''
-def during(person):
+def during(person, slack_client):
     message = 'don\'t talk to me, you should be working out!'
     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
     time.sleep(READ_WEBSOCKET_DELAY)
@@ -73,7 +76,7 @@ Placeholder for end of body workout. Need to determine how we want conversation 
 during the body workout routine
 TODO see above
 '''
-def end(person):
+def end(person, slack_client):
     person.status = 'inactive'
     message = '@' + person.name + ', looks like you finished your workout. how many miles did you run?'
     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
