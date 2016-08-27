@@ -71,6 +71,8 @@ def handle_command(command, person, job_status, weekly_schedule):
 
     if person.status == 'active' and person.name in ACTIVE_USERS:
         workout.during(person, slack_client)
+    elif command == 'summary' and person.name in ACTIVE_USERS:
+        person.summary_report()
     elif not person.routine and person.name in ACTIVE_USERS:
         time_str = str(hour) + ':00'
         message = 'hey @' + person.name + ', it looks like you don\'t a schedule set up yet. we\'ll do that for you ' \
@@ -189,9 +191,9 @@ if __name__ == "__main__":
         # create each Person
         for i in ids_x_person:
             if i in [BOT_ID, 'USLACKBOT']:
-                temp = person.Person(i, ids_x_person[i][0], ids_x_person[i][1].lower(), 'n/a')
+                temp = person.Person(i, ids_x_person[i][0], ids_x_person[i][1].lower(), 'n/a', sqlite_file)
             else:
-                temp = person.Person(i, ids_x_person[i][0], ids_x_person[i][1].lower(), bot_channels[i])
+                temp = person.Person(i, ids_x_person[i][0], ids_x_person[i][1].lower(), bot_channels[i], sqlite_file)
             ids_x_person[i] = temp
 
         jobs_scheduled = False
@@ -205,11 +207,10 @@ if __name__ == "__main__":
                     workout.end(ids_x_person[i], slack_client)
             try:
                 command, channel, user_id = util.parse_slack_output(slack_client.rtm_read(), slack_client)
-            except WebSocketConnectionClosedException as e:
-                print '\n~~ Error Caught: Connnection is already closed. ~~'
+            except Exception as e:
                 print e
-                print '~~ Error Caught: Connnection is already closed. ~~'
-                sys.exit()
+                print '~~ error: connnection is closed. restarting chat-bot ~~'
+                # TODO: send message into 'testing' channel (or another channel) that bot is restarting
 
             if command and channel:
                 jobs_scheduled = handle_command(command, ids_x_person[user_id], jobs_scheduled, weekly_schedule)

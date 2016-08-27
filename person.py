@@ -6,7 +6,7 @@ import util
 
 class Person:
 
-    def __init__(self, slack_id, name, timezone, channel):
+    def __init__(self, slack_id, name, timezone, channel, sqlite_file):
         """ initialize a person by taking in data """
 
         self.slack_id = slack_id
