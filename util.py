@@ -3,9 +3,9 @@ import os
 """ data objects """
 # starterbot's ID as an environment variable
 BOT_ID = os.environ.get('BOT_ID')
-
-# constants
 AT_BOT = "<@" + str(BOT_ID) + ">:"
+
+TESTING_CHANNEL = 'G1YDKSM27'
 
 gmt_x_timezone = {}
 gmt_x_timezone['eastern daylight yime'] = -4
