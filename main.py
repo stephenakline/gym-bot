@@ -23,6 +23,7 @@ Notes:
         https://www.fullstackpython.com/blog/build-first-slack-bot-python.html
     - make each person an object, follow this guide
         https://jeffknupp.com/blog/2014/06/18/improve-your-python-python-classes-and-object-oriented-programming/
+TODO: should person have an instance of workout class? would make things a bit 'cleaner'?
 TODO: ask person what workout they are doing (run or workout)
 TODO: create rest of DAG for workout routine (maybe make a workout_functions.py file)
 Later:
@@ -38,9 +39,6 @@ AT_BOT = "<@" + str(BOT_ID) + ">:"
 
 # starter commands
 HELLO_COMMAND   = ["hello", "morning"]
-RUN_COMMAND     = ["run", "ran", "treadmill"]
-ROW_COMMAND     = ["row"]
-WORKOUT_COMMAND = ["workout"]
 SUMMARY_COMMAND = ["summary", "report"]
 WORKOUT_LIST    = {'2-knee-up-crunches.gif': 'knee up crunches',
                    '1-standard-crunch.gif': 'standard crunches'}
@@ -182,6 +180,7 @@ if __name__ == "__main__":
     DATABASE    = CONNECTION.cursor()
 
     weekly_schedule = scheduler.Scheduler()
+    workout = workout.Workout(sqlite_file)
 
     if slack_client.rtm_connect():
         print('\n--- gym-buddy connected and running! ---\n')
