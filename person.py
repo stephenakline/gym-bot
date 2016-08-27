@@ -44,13 +44,25 @@ class Person:
         # connecting to the database file
         c = self.conn.cursor()
 
-        # print all records from running table
-        c.execute('SELECT * FROM my_running_table')
+        # print all records for person from running table
+        c.execute('SELECT * FROM my_running_table WHERE user_id == \'' + self.name + '\'')
         all_rows = c.fetchall()
         print "my_running_table:"
         for i in all_rows:
-        	print "\t",
-        	print i
+            print 'user_id: '     + str(i[0])
+            print '\tdate_time: ' + str(i[1])
+            print '\tdistance: '  + str(i[2])
+            print '\tduration: '  + str(i[3])
+            print '\tmile_time: ' + str(i[4])
+
+        # print all records for person from workout table
+        c.execute('SELECT * FROM my_workout_table WHERE user_id == \'' + self.name + '\'')
+        all_rows = c.fetchall()
+        print "\nmy_workout_table:"
+        for i in all_rows:
+            print 'user_id: '       + str(i[0])
+            print '\tdate_time: '   + str(i[1])
+            print '\trepetitions: ' + str(i[2])
 
         # close connection to database
         self.conn.commit()
