@@ -35,7 +35,7 @@ class Workout:
     User is then sent down a line of questions depending on the workout.
     TODO add functions for body-weight workouts
     '''
-    # def determine_workout(respone, person, weekly_schedule):
+    # def determine_workout(respone, person):
 
     '''
     This function begins the discussion about a workout. If user says 'yes' it then determines
@@ -44,13 +44,13 @@ class Workout:
     TODO add function to count the number of times a user does or does not workout
     TODO make time more dynamic for end of workout
     '''
-    def begin(self, person, weekly_schedule, slack_client):
+    def begin(self, person):
         message = 'morning @' + person.name + ', you ready for your workout?'
-        slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
+        person.client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
         time.sleep(READ_WEBSOCKET_DELAY)
         response = None
         while response == None:
-            response, _, _ = util.parse_slack_output(slack_client.rtm_read(), slack_client)
+            response, _, _ = util.parse_slack_output(person.client.rtm_read(), person.client)
             time.sleep(READ_WEBSOCKET_DELAY)
         gmt_time = time.gmtime()
         hour = gmt_time[3] + 1
@@ -61,20 +61,20 @@ class Workout:
             person.status = 'inactive'
         elif response.startswith('y'):
             message = 'that\'s what i wanted to hear! i\'ll check back in an hour'
-            weekly_schedule.end_workout(person, time_str)
+            person.my_schedule.end_workout(person, time_str)
             person.status = 'active'
         else:
             message = 'i don\'t know what that means, so we\'re starting your workout anyways. i\'ll check back in an hour'
-            weekly_schedule.end_workout(person, time_str)
+            person.my_schedule.end_workout(person, time_str)
             person.status = 'active'
-        slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
+        person.client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
 
     '''
     Function that responds to user while they are working out.
     '''
-    def during(self, person, slack_client):
+    def during(self, person):
         message = 'don\'t talk to me, you should be working out!'
-        slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
+        person.client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
         time.sleep(READ_WEBSOCKET_DELAY)
 
     '''
@@ -82,24 +82,24 @@ class Workout:
     during the body workout routine
     TODO see above
     '''
-    def end(self, person, slack_client):
+    def end(self, person):
         database = self.connection.cursor()
 
         person.status = 'inactive'
         message = '@' + person.name + ', looks like you finished your workout. how many miles did you run?'
-        slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
+        person.client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
         miles = None
         while miles == None:
-            miles, _, _ = util.parse_slack_output(slack_client.rtm_read(), slack_client)
+            miles, _, _ = util.parse_slack_output(person.client.rtm_read(), person.client)
             time.sleep(READ_WEBSOCKET_DELAY)
         message = 'impressive. how long did you run for?'
-        slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
+        person.client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
         duration = None
         while duration == None:
-            duration, _, _ = util.parse_slack_output(slack_client.rtm_read(), slack_client)
+            duration, _, _ = util.parse_slack_output(person.client.rtm_read(), person.client)
             time.sleep(READ_WEBSOCKET_DELAY)
         message = 'nice. you ran ' + miles + ' miles in ' + duration + ' minutes'
-        slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
+        person.client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
         time.sleep(READ_WEBSOCKET_DELAY)
 
         current_date_time = str(datetime.datetime.now())

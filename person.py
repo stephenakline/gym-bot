@@ -1,23 +1,28 @@
+import os
 import string
 import sqlite3
 import sys
 import util
 import datetime
+from slackclient import SlackClient
 
-import schedule
+import scheduler
+import workout
 
 class Person:
 
     def __init__(self, slack_id, name, timezone, channel, sqlite_file):
         """ initialize a person by taking in data """
 
-        self.slack_id = slack_id
-        self.name     = name
-        self.timezone = timezone
-        self.channel  = channel
-        self.routine  = {}
-        self.status   = 'inactive'
-        self.conn     = sqlite3.connect(sqlite_file)
+        self.slack_id    = slack_id
+        self.name        = name
+        self.timezone    = timezone
+        self.channel     = channel
+        self.routine     = {}
+        self.status      = 'inactive'
+        self.conn        = sqlite3.connect(sqlite_file)
+        self.client      = SlackClient(os.environ.get('SLACK_TOKEN'))
+        self.my_schedule = scheduler.Scheduler()
 
     def set_timezone(self, timezone):
         self.timezone = timezone
@@ -34,12 +39,13 @@ class Person:
 
     def start_workout(self):
         print '[person.start_workout()]: starting workout for ' + self.name
-        self.status = 'start'
+        workout.begin(self)
         return schedule.CancelJob
 
     def finish_workout(self):
         print '[person.end_workout()]: ending workout for ' + self.name
         self.status = 'complete'
+        workout.end(self)
         return schedule.CancelJob
 
     # TODO what other information does user want?
