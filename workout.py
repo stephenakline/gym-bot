@@ -1,7 +1,7 @@
 '''
 File that contains functions [...]
 '''
-import time
+import datetime
 import sqlite3
 from slackclient import SlackClient
 
@@ -57,7 +57,7 @@ class Workout:
         minute = gmt_time[4]
         time_str = str(hour) + ':' + str(minute)
         if response.startswith('n'):
-            message = 'you lazy piece of... just don\'t let it happen again'
+            message = 'you lazy piece of shit. just don\'t let it happen again'
             person.status = 'inactive'
         elif response.startswith('y'):
             message = 'that\'s what i wanted to hear! i\'ll check back in an hour'
@@ -102,9 +102,9 @@ class Workout:
         slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
         time.sleep(READ_WEBSOCKET_DELAY)
 
-        curr = time.strftime("%Y-%m-%d %H:%M:%S")
-        database.execute("INSERT INTO my_running_table VALUES (?, ?, ?, ?, ?)",
-            (person.name, curr, float(miles), float(duration), float(duration) / float(miles)))
+        current_date_time = str(datetime.datetime.now())
+        database.execute("INSERT INTO my_running_table VALUES (?, ?, ?, ?, ?, ?)",
+            (person.name, current_date_time, person.timezone, float(miles), float(duration), float(duration) / float(miles)))
         self.connection.commit()
         print '[workout.end(person)]: adding workout statistics for ' + person.name
 

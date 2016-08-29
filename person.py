@@ -1,8 +1,10 @@
 import string
-import schedule
 import sqlite3
 import sys
 import util
+import datetime
+
+import schedule
 
 class Person:
 
@@ -40,33 +42,30 @@ class Person:
         self.status = 'complete'
         return schedule.CancelJob
 
+    # TODO what other information does user want?
+    # TODO add same thing for workout
     def summary_report(self):
         # connecting to the database file
         c = self.conn.cursor()
 
-        # print all records for person from running table
-        c.execute('SELECT * FROM my_running_table WHERE user_id == \'' + self.name + '\'')
-        all_rows = c.fetchall()
-        print "my_running_table:"
-        for i in all_rows:
-            print 'user_id: '     + str(i[0])
-            print '\tdate_time: ' + str(i[1])
-            print '\tdistance: '  + str(i[2])
-            print '\tduration: '  + str(i[3])
-            print '\tmile_time: ' + str(i[4])
+        last_week = datetime.datetime.now() - datetime.timedelta(days = 7)
 
-        # print all records for person from workout table
-        c.execute('SELECT * FROM my_workout_table WHERE user_id == \'' + self.name + '\'')
+        # print all records for person from running table
+        c.execute('SELECT * FROM my_running_table WHERE date_time BETWEEN \'' \
+            + str(last_week) + '\' AND \'' + str(datetime.datetime.now()) + '\'' \
+            + 'AND user_id == \'' + self.name + '\'')
+
         all_rows = c.fetchall()
-        print "\nmy_workout_table:"
+        total_miles = 0.0
         for i in all_rows:
-            print 'user_id: '       + str(i[0])
-            print '\tdate_time: '   + str(i[1])
-            print '\trepetitions: ' + str(i[2])
+            total_miles += i[3]
 
         # close connection to database
         self.conn.commit()
         self.conn.close()
+
+        message = '@' + self.name + ', this past week you ran *' + str(total_miles) + ' miles*. not so great fat-ass. \nstep it up!'
+        return message
 
     def __repr__(self):
         """ overloading of print method for Person class """

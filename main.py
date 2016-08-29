@@ -70,7 +70,8 @@ def handle_command(command, person, job_status, weekly_schedule):
     if person.status == 'active' and person.name in ACTIVE_USERS:
         workout.during(person, slack_client)
     elif command == 'summary' and person.name in ACTIVE_USERS:
-        person.summary_report()
+        message = person.summary_report()
+        slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
     elif not person.routine and person.name in ACTIVE_USERS:
         time_str = str(hour) + ':00'
         message = 'hey @' + person.name + ', it looks like you don\'t a schedule set up yet. we\'ll do that for you ' \
@@ -83,60 +84,6 @@ def handle_command(command, person, job_status, weekly_schedule):
         message = 'we\'re still building out our functionality. come back in a few weeks.'
         slack_client.api_call('chat.postMessage', channel=person.channel, text=message, as_user=True)
     return job_status
-
-# def begin_workout(person, weekly_schedule):
-#     message = 'morning @' + person.name + ', you ready for your workout?'
-#     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
-#     time.sleep(READ_WEBSOCKET_DEALY)
-#     response = None
-#     while response == None:
-#         response, _, _ = parse_slack_output(slack_client.rtm_read())
-#         time.sleep(READ_WEBSOCKET_DELAY)
-#     gmt_time = time.gmtime()
-#     hour = gmt_time[3] + 1
-#     minute = gmt_time[4]
-#     time_str = str(hour) + ':' + str(minute)
-#     if response.startswith('n'):
-#         message = 'you lazy piece of... just don\'t let it happen again'
-#         person.status = 'inactive'
-#     elif response.startswith('y'):
-#         message = 'that\'s what i wanted to hear! i\'ll check back in an hour'
-#         weekly_schedule.end_workout(person, time_str)
-#         person.status = 'active'
-#     else:
-#         message = 'i don\'t know what that means, so we\'re starting your workout anyways. i\'ll check back in an hour'
-#         weekly_schedule.end_workout(person, time_str)
-#         person.status = 'active'
-#     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
-
-# def during_workout(person):
-#     message = 'don\'t talk to me, you should be working out!'
-#     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
-#     time.sleep(READ_WEBSOCKET_DELAY)
-
-# def end_workout(person):
-#     person.status = 'inactive'
-#     message = '@' + person.name + ', looks like you finished your workout. how many miles did you run?'
-#     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
-#     miles = None
-#     while miles == None:
-#         miles, _, _ = parse_slack_output(slack_client.rtm_read())
-#         time.sleep(READ_WEBSOCKET_DELAY)
-#     message = 'impressive. how long did you run for?'
-#     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
-#     duration = None
-#     while duration == None:
-#         duration, _, _ = parse_slack_output(slack_client.rtm_read())
-#         time.sleep(READ_WEBSOCKET_DELAY)
-#     message = 'nice. you ran ' + miles + ' miles in ' + duration + ' minutes'
-#     slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
-#     time.sleep(READ_WEBSOCKET_DELAY)
-#
-#     curr = time.strftime("%Y-%m-%d %H:%M:%S")
-#     DATABASE.execute("INSERT INTO my_running_table VALUES (?, ?, ?, ?, ?)",
-#         (person.name, curr, float(miles), float(duration), float(duration) / float(miles)))
-#     CONNECTION.commit()
-#     print '[main.end_workout(person)]: adding workout statistics for ' + person.name
 
 def set_routine(person, weekly_schedule):
     # print "we will ask " + person.name + " for his schedule in channel " + person.channel
@@ -208,8 +155,9 @@ if __name__ == "__main__":
                 command, channel, user_id = util.parse_slack_output(slack_client.rtm_read(), slack_client)
             except Exception as e:
                 print '--- error: ' + e + ' ---'
-                slack_client = SlackClient(os.environ.get('SLACK_TOKEN'))                
-                # TODO: send message into 'testing' channel (or another channel) that bot is restarting
+                slack_client = SlackClient(os.environ.get('SLACK_TOKEN'))
+                message = 'error: ' + str(e) + '. re-connecting gym-buddy'
+                slack_client.api_call('chat.postMessage', channel=util.TESTING_CHANNEL, text=message, as_user=True)
 
             if command and channel:
                 jobs_scheduled = handle_command(command, ids_x_person[user_id], jobs_scheduled, weekly_schedule)
