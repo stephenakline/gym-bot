@@ -44,7 +44,7 @@ class Workout:
     TODO add function to count the number of times a user does or does not workout
     TODO make time more dynamic for end of workout
     '''
-    def begin(person, weekly_schedule, slack_client):
+    def begin(self, person, weekly_schedule, slack_client):
         message = 'morning @' + person.name + ', you ready for your workout?'
         slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
         time.sleep(READ_WEBSOCKET_DELAY)
@@ -72,7 +72,7 @@ class Workout:
     '''
     Function that responds to user while they are working out.
     '''
-    def during(person, slack_client):
+    def during(self, person, slack_client):
         message = 'don\'t talk to me, you should be working out!'
         slack_client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
         time.sleep(READ_WEBSOCKET_DELAY)
@@ -82,7 +82,7 @@ class Workout:
     during the body workout routine
     TODO see above
     '''
-    def end(person, slack_client):
+    def end(self, person, slack_client):
         database = self.connection.cursor()
 
         person.status = 'inactive'

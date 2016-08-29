@@ -207,8 +207,8 @@ if __name__ == "__main__":
             try:
                 command, channel, user_id = util.parse_slack_output(slack_client.rtm_read(), slack_client)
             except Exception as e:
-                print e
-                print '~~ error: connnection is closed. restarting chat-bot ~~'
+                print '--- error: ' + e + ' ---'
+                slack_client = SlackClient(os.environ.get('SLACK_TOKEN'))                
                 # TODO: send message into 'testing' channel (or another channel) that bot is restarting
 
             if command and channel:
