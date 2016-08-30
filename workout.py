@@ -3,6 +3,7 @@ File that contains functions [...]
 '''
 import datetime
 import sqlite3
+import time
 from slackclient import SlackClient
 
 import person

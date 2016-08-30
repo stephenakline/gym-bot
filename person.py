@@ -4,6 +4,7 @@ import sqlite3
 import sys
 import util
 import datetime
+import schedule
 from slackclient import SlackClient
 
 import scheduler
@@ -21,6 +22,7 @@ class Person:
         self.routine     = {}
         self.status      = 'inactive'
         self.conn        = sqlite3.connect(sqlite_file)
+        self.workout     = workout.Workout(sqlite_file)
         self.client      = SlackClient(os.environ.get('SLACK_TOKEN'))
         self.my_schedule = scheduler.Scheduler()
 
@@ -39,13 +41,13 @@ class Person:
 
     def start_workout(self):
         print '[person.start_workout()]: starting workout for ' + self.name
-        workout.begin(self)
+        self.workout.begin(self)
         return schedule.CancelJob
 
     def finish_workout(self):
         print '[person.end_workout()]: ending workout for ' + self.name
         self.status = 'complete'
-        workout.end(self)
+        self.workout.end(self)
         return schedule.CancelJob
 
     # TODO what other information does user want?
