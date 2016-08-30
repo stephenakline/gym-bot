@@ -21,7 +21,7 @@ class Person:
         self.channel     = channel
         self.routine     = {}
         self.status      = 'inactive'
-        self.conn        = sqlite3.connect(sqlite_file)
+        self.sqlite_file = sqlite_file
         self.workout     = workout.Workout(sqlite_file)
         self.client      = SlackClient(os.environ.get('SLACK_TOKEN'))
         self.my_schedule = scheduler.Scheduler()
@@ -54,6 +54,7 @@ class Person:
     # TODO add same thing for workout
     def summary_report(self):
         # connecting to the database file
+        conn = sqlite3.connect(self.sqlite_file)
         c = self.conn.cursor()
 
         last_week = datetime.datetime.now() - datetime.timedelta(days = 7)
@@ -69,11 +70,11 @@ class Person:
             total_miles += i[3]
 
         # close connection to database
-        self.conn.commit()
-        self.conn.close()
+        conn.commit()
+        conn.close()
 
-        message = '@' + self.name + ', this past week you ran *' + str(total_miles) + ' miles*. not so great fat-ass. \nstep it up!'
-        return message
+        message = 'this past week you ran *' + str(total_miles) + ' miles*. not so great fat-ass. \nstep it up!'
+        self.client.api_call('chat.postMessage', channel = self.channel, text = message, as_user = True, link_names = 1)
 
     def __repr__(self):
         """ overloading of print method for Person class """

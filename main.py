@@ -7,6 +7,7 @@ import json
 import numbers
 import decimal
 import sqlite3
+import threading
 from slackclient import SlackClient
 
 import person
@@ -53,7 +54,7 @@ WORKOUT_LIST    = {'2-knee-up-crunches.gif': 'knee up crunches',
                     # '11-bicycle.gif': ,
                     # '12-half-up-twists.gif': }
 
-ACTIVE_USERS = ['stephen']
+ACTIVE_USERS = ['stephen', 'ecprokop']
 
 # instantiate Slack & Twilio clients
 SLACK_MAIN = SlackClient(os.environ.get('SLACK_TOKEN'))
@@ -70,8 +71,7 @@ def handle_command(command, person, job_status):
     if person.status == 'active' and person.name in ACTIVE_USERS:
         workout.during(person)
     elif command == 'summary' and person.name in ACTIVE_USERS:
-        message = person.summary_report()
-        person.client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
+        person.summary_report()
     elif not person.routine and person.name in ACTIVE_USERS:
         time_str = str(hour) + ':00'
         message = 'hey @' + person.name + ', it looks like you don\'t a schedule set up yet. we\'ll do that for you ' \
@@ -86,7 +86,8 @@ def handle_command(command, person, job_status):
     return job_status
 
 def set_routine(person):
-    # print "we will ask " + person.name + " for his schedule in channel " + person.channel
+    print '[main.set_routine()]: setting routine for ' + person.name
+
     message = 'we are going to set up your schedule for the week now. please provide workout times in 24-hour format (i.e. 6:30 or 13:10). if you do not want to work out that day, say *no*.'
     person.client.api_call('chat.postMessage', channel=person.channel, text=message, as_user=True)
     message = ''
@@ -112,6 +113,34 @@ def set_routine(person):
     person.client.api_call('chat.postMessage', channel=person.channel, text=message, as_user=True)
     person.my_schedule.start_persons_workout(person)
     return schedule.CancelJob
+
+def start_bot_activity(ids_x_person, p):
+    print '[main.start_bot_activity()]: starting bot activity for ' + p
+
+    person_id = ''
+    for temp_id, temp_person in ids_x_person.iteritems():
+        if temp_person.name == p:
+            person_id = temp_id
+
+    if ids_x_person[person_id].client.rtm_connect():
+
+        jobs_scheduled = False
+        while True:
+            ''' need to send start of workout message here '''
+
+            try:
+                command, channel, user_id = util.parse_slack_output(ids_x_person[person_id].client.rtm_read(), ids_x_person[person_id].client)
+            except Exception as e:
+                print '--- error: ' + e + ' ---'
+                ids_x_person[person_id].client = SlackClient(os.environ.get('SLACK_TOKEN'))
+                message = 'error: ' + str(e) + '. re-connecting gym-buddy'
+                ids_x_person[person_id].client.api_call('chat.postMessage', channel=util.TESTING_CHANNEL, text=message, as_user=True)
+
+            if command and channel == ids_x_person[person_id].channel:
+                jobs_scheduled = handle_command(command, ids_x_person[person_id], jobs_scheduled)
+            if jobs_scheduled:
+                ids_x_person[person_id].my_schedule.run_pending()
+            time.sleep(READ_WEBSOCKET_DELAY)
 
 if __name__ == "__main__":
     READ_WEBSOCKET_DELAY = 1           # 1 second delay between reading from firehose
@@ -141,35 +170,15 @@ if __name__ == "__main__":
                 temp = person.Person(i, ids_x_person[i][0], ids_x_person[i][1].lower(), bot_channels[i], sqlite_file)
             ids_x_person[i] = temp
 
-        # TODO this currently works, the next step is to turn this into threaded functions are all active users
-        # TODO make each person have a schedule, instead of one schedule for everyone
+        # TODO the next step is to turn this into threaded functions are all active users
         # TODO great explanation (https://pymotw.com/2/threading/)
 
-        for p in ACTIVE_USERS:
-            p_id = ''
-            for temp_id, temp_person in ids_x_person.iteritems():
-                if temp_person.name == p:
-                    p_id = temp_id
+        threads = []
+        for p in range(len(ACTIVE_USERS)):
+            t = threading.Thread(target = start_bot_activity, args=(ids_x_person, ACTIVE_USERS[p], ))
+            threads.append(t)
+            t.start()
 
-            if ids_x_person[p_id].client.rtm_connect():
-
-                jobs_scheduled = False
-                while True:
-                    ''' need to send start of workout message here '''
-
-                    try:
-                        command, channel, user_id = util.parse_slack_output(ids_x_person[p_id].client.rtm_read(), ids_x_person[p_id].client)
-                    except Exception as e:
-                        print '--- error: ' + e + ' ---'
-                        ids_x_person[p_id].client = SlackClient(os.environ.get('SLACK_TOKEN'))
-                        message = 'error: ' + str(e) + '. re-connecting gym-buddy'
-                        ids_x_person[p_id].client.api_call('chat.postMessage', channel=util.TESTING_CHANNEL, text=message, as_user=True)
-
-                    if command and channel:
-                        jobs_scheduled = handle_command(command, ids_x_person[user_id], jobs_scheduled)
-                    if jobs_scheduled:
-                        ids_x_person[p_id].my_schedule.run_pending()
-                    time.sleep(READ_WEBSOCKET_DELAY)
     else:
         print 'Connection failed. Invalid Slack token or bot ID?'
 
