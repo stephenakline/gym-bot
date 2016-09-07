@@ -36,6 +36,14 @@ class Scheduler:
         time_end = str(hour) + ':' + str(minute)
         self.schedule.every().day.at(time_str).do(person.finish_workout)
 
+    def end_running_workout(self, person, time_str):
+        print '[scheduler.end_workout(person, time_str)]: run ends for ' \
+            + person.name + ' in 1 hour from ' + person.get_local_time(time_str) + ' ' + person.timezone
+        hour = int(time_str.split(':')[0]) + 1
+        minute = int(time_str.split(':')[0])
+        time_end = str(hour) + ':' + str(minute)
+        self.schedule.every().day.at(time_str).do(person.finish_run)
+
     def start_monday_routine(self, person, time_str):
         print '[scheduler.start_monday_routine(person, time_str)]: workout starts for ' \
             + person.name + ' at ' + person.get_local_time(time_str) + ' ' + person.timezone

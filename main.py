@@ -24,9 +24,6 @@ Notes:
         https://www.fullstackpython.com/blog/build-first-slack-bot-python.html
     - make each person an object, follow this guide
         https://jeffknupp.com/blog/2014/06/18/improve-your-python-python-classes-and-object-oriented-programming/
-TODO: should person have an instance of workout class? would make things a bit 'cleaner'?
-TODO: ask person what workout they are doing (run or workout)
-TODO: create rest of DAG for workout routine (maybe make a workout_functions.py file)
 Later:
     - how to upload images from local computer using slack API?
     - add image for each workout? track each excercise?

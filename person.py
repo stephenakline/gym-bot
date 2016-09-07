@@ -47,14 +47,20 @@ class Person:
     def finish_workout(self):
         print '[person.end_workout()]: ending workout for ' + self.name
         self.status = 'complete'
-        self.workout.end(self)
+        self.workout.end_workout(self)
+        return schedule.CancelJob
+
+    def finish_run(self):
+        print '[person.end_workout()]: ending workout for ' + self.name
+        self.status = 'complete'
+        self.workout.end_run(self)
         return schedule.CancelJob
 
     # TODO what other information does user want?
     # TODO add same thing for workout
     def summary_report(self):
         # connecting to the database file
-        
+
         c = self.connection.cursor()
 
         last_week = datetime.datetime.now() - datetime.timedelta(days = 7)
