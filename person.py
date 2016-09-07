@@ -12,7 +12,7 @@ import workout
 
 class Person:
 
-    def __init__(self, slack_id, name, timezone, channel, sqlite_file):
+    def __init__(self, slack_id, name, timezone, channel, connection):
         """ initialize a person by taking in data """
 
         self.slack_id    = slack_id
@@ -21,8 +21,8 @@ class Person:
         self.channel     = channel
         self.routine     = {}
         self.status      = 'inactive'
-        self.sqlite_file = sqlite_file
-        self.workout     = workout.Workout(sqlite_file)
+        self.connection  = connection
+        self.workout     = workout.Workout(connection)
         self.client      = SlackClient(os.environ.get('SLACK_TOKEN'))
         self.my_schedule = scheduler.Scheduler()
 
@@ -54,8 +54,8 @@ class Person:
     # TODO add same thing for workout
     def summary_report(self):
         # connecting to the database file
-        conn = sqlite3.connect(self.sqlite_file)
-        c = self.conn.cursor()
+        
+        c = self.connection.cursor()
 
         last_week = datetime.datetime.now() - datetime.timedelta(days = 7)
 
@@ -70,8 +70,7 @@ class Person:
             total_miles += i[3]
 
         # close connection to database
-        conn.commit()
-        conn.close()
+        self.connection.commit()
 
         message = 'this past week you ran *' + str(total_miles) + ' miles*. not so great fat-ass. \nstep it up!'
         self.client.api_call('chat.postMessage', channel = self.channel, text = message, as_user = True, link_names = 1)

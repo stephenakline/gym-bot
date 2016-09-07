@@ -54,7 +54,7 @@ WORKOUT_LIST    = {'2-knee-up-crunches.gif': 'knee up crunches',
                     # '11-bicycle.gif': ,
                     # '12-half-up-twists.gif': }
 
-ACTIVE_USERS = ['stephen', 'ecprokop']
+ACTIVE_USERS = ['stephen'] #, 'ecprokop']
 
 # instantiate Slack & Twilio clients
 SLACK_MAIN = SlackClient(os.environ.get('SLACK_TOKEN'))
@@ -123,7 +123,6 @@ def start_bot_activity(ids_x_person, p):
             person_id = temp_id
 
     if ids_x_person[person_id].client.rtm_connect():
-
         jobs_scheduled = False
         while True:
             ''' need to send start of workout message here '''
@@ -152,7 +151,7 @@ if __name__ == "__main__":
         exit()
 
     sqlite_file = sqlite_path + sys.argv[1]
-    CONNECTION  = sqlite3.connect(sqlite_file)
+    CONNECTION  = sqlite3.connect(sqlite_file, check_same_thread=False)
     DATABASE    = CONNECTION.cursor()
 
     workout = workout.Workout(sqlite_file)
@@ -165,19 +164,20 @@ if __name__ == "__main__":
         # create each Person
         for i in ids_x_person:
             if i in [BOT_ID, 'USLACKBOT']:
-                temp = person.Person(i, ids_x_person[i][0], ids_x_person[i][1].lower(), 'n/a', sqlite_file)
+                temp = person.Person(i, ids_x_person[i][0], ids_x_person[i][1].lower(), 'n/a', CONNECTION)
             else:
-                temp = person.Person(i, ids_x_person[i][0], ids_x_person[i][1].lower(), bot_channels[i], sqlite_file)
+                temp = person.Person(i, ids_x_person[i][0], ids_x_person[i][1].lower(), bot_channels[i], CONNECTION)
             ids_x_person[i] = temp
 
         # TODO the next step is to turn this into threaded functions are all active users
         # TODO great explanation (https://pymotw.com/2/threading/)
 
-        threads = []
-        for p in range(len(ACTIVE_USERS)):
-            t = threading.Thread(target = start_bot_activity, args=(ids_x_person, ACTIVE_USERS[p], ))
-            threads.append(t)
-            t.start()
+        start_bot_activity(ids_x_person, ACTIVE_USERS[0])
+        #threads = []
+        #for p in range(len(ACTIVE_USERS)):
+        #    t = threading.Thread(target = start_bot_activity, args=(ids_x_person, ACTIVE_USERS[p], ))
+        #    threads.append(t)
+        #    t.start()
 
     else:
         print 'Connection failed. Invalid Slack token or bot ID?'

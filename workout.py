@@ -17,11 +17,11 @@ READ_WEBSOCKET_DELAY = 1
 
 class Workout:
 
-    def __init__(self, sqlite_file):
+    def __init__(self, connection):
         """ initialize an instance of the Scheduler class """
         self.run_command = ["run", "ran", "treadmill"]
         self.workout_command = ["workout"]
-        self.connection = sqlite3.connect(sqlite_file)
+        self.connection = connection
 
 # SUMMARY_COMMAND = ["summary", "report"]
 # WORKOUT_LIST    = {'2-knee-up-crunches.gif': 'knee up crunches',

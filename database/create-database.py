@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-sqlite_file   = os.getcwd() + '/database/temp.sqlite'
+sqlite_file   = os.getcwd() + '/workouts.sqlite'
 table_run     = 'my_running_table'
 table_row     = 'my_rowing_table'
 table_workout = 'my_workout_table'
