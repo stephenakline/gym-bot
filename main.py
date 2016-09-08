@@ -3,6 +3,7 @@ import random
 import sys
 import schedule
 import time
+import datetime
 import json
 import numbers
 import decimal
@@ -14,6 +15,7 @@ import person
 import util
 import workout
 import scheduler
+import event
 
 """
 Complete:
@@ -27,7 +29,6 @@ Notes:
 Later:
     - how to upload images from local computer using slack API?
     - add image for each workout? track each excercise?
-    - run summary reports from data base on command
     - incorporate Google Calendar API to add workout events to your calendar [do i have a user's email?]
 """
 
@@ -88,22 +89,26 @@ def set_routine(person):
     message = 'we are going to set up your schedule for the week now. please provide workout times in 24-hour format (i.e. 6:30 or 13:10). if you do not want to work out that day, say *no*.'
     person.client.api_call('chat.postMessage', channel=person.channel, text=message, as_user=True)
     message = ''
-    for i in util.days_of_week:
+    for i in util.list_days:
         message += 'what time do you want to workout on ' + i + '?'
         person.client.api_call('chat.postMessage', channel=person.channel, text=message, as_user=True)
         start_time = None
 
         while start_time == None:
-            start_time, channel, user_name = util.parse_slack_output(person.client.rtm_read(), person.client)
+            start_time, _, _ = util.parse_slack_output(person.client.rtm_read(), person.client)
             time.sleep(READ_WEBSOCKET_DELAY)
 
         if start_time == 'no':
             message = 'okay, I won\'t bother you on ' + i + '. '
             continue
         message = ''
-        hour = int(start_time.split(":")[0]) - util.gmt_x_timezone[person.timezone]
-        minute = start_time.split(":")[1]
-        start_time = str(hour) + ":" + str(minute)
+        hour = int(start_time.split(":")[0])
+        minute = int(start_time.split(":")[1])
+
+        length = util.next_weekday(datetime.datetime.today(), util.days_of_week[i], hour, minute)
+        event.add_to_calendar(length[0], length[1])
+
+        start_time = str(hour - util.gmt_x_timezone[person.timezone]) + ":" + str(minute)
         person.set_routine(start_time, i)
 
     message = 'great, your schedule is all set.'

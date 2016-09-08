@@ -1,4 +1,5 @@
 import os
+import datetime
 
 """ data objects """
 # starterbot's ID as an environment variable
@@ -17,7 +18,9 @@ for i in gmt_x_timezone.keys():
     list_timezones += '*' + i.title() + '*, '
 list_timezones = list_timezones[:-2]
 
-days_of_week = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+list_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+days_number = [0, 1, 2, 3, 4, 5, 6]
+days_of_week = dict(zip(list_days, days_number))
 
 """ helper functions for splitting up unicode and getting list fo users/channels """
 def parse_slack_output(slack_rtm_output, slack_client):
@@ -77,6 +80,15 @@ def get_list_of_channels(slack_client):
 
     direct_channels = dict(zip(users, channels))
     return direct_channels, channels
+
+def next_weekday(d, weekday, hour, minute):
+    days_ahead = weekday - d.weekday()
+    if days_ahead <= 0: # Target day already happened this week
+        days_ahead += 7
+    temp_date = str(d + datetime.timedelta(days_ahead)).split()[0]
+    begin = temp_date + 'T' + str(hour).zfill(2) + ':' + str(minute).zfill(2) + ':00'
+    end   = temp_date + 'T' + str(hour+1).zfill(2) + ':' + str(minute).zfill(2) + ':00'
+    return [str(begin), str(end)]
 
 """ JSON files for attachments such as images and buttons """
 
