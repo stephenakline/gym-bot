@@ -75,8 +75,8 @@ def handle_command(command, person, job_status):
         message = 'hey @' + person.name + ', it looks like you don\'t a schedule set up yet. we\'ll do that for you ' \
             + 'on *sunday* at *' + person.get_local_time(time_str) + '*.'
         person.client.api_call('chat.postMessage', channel = person.channel, text = message, as_user = True, link_names = 1)
-        # person.my_schedule.schedule.every().sunday.at(time_str).do(set_routine, person, schedule)
-        person.my_schedule.schedule.every(1).minutes.do(set_routine, person)
+        person.my_schedule.schedule.every().sunday.at(time_str).do(set_routine, person)
+        # person.my_schedule.schedule.every(1).minutes.do(set_routine, person)
         job_status = True
     else:
         message = 'we\'re still building out our functionality. come back in a few weeks.'
@@ -114,7 +114,7 @@ def set_routine(person):
     message = 'great, your schedule is all set.'
     person.client.api_call('chat.postMessage', channel=person.channel, text=message, as_user=True)
     person.my_schedule.start_persons_workout(person)
-    return schedule.CancelJob
+    # return schedule.CancelJob
 
 def start_bot_activity(ids_x_person, p):
     print '[main.start_bot_activity()]: starting bot activity for ' + p

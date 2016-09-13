@@ -25,11 +25,6 @@ def add_to_calendar(start, end):
             'dateTime': end + '-07:00',
             'timeZone': 'America/Los_Angeles',
         },
-        'attendees': [
-          {'email': 'stephen.a.kline@gmail.com'},
-          {'email': 'sakline@stanford.edu'},
-        ],
-
     }
 
     e = CAL.events().insert(calendarId='primary',sendNotifications=True, body=EVENT).execute()
